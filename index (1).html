@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watch With Us</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+
+    /* Genel sıfırlama */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      color: #111111;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: #ffd6e0; /* açık pembe */
+      padding: 18px 24px;
+      border-bottom: 1px solid #f0b8c8;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 3px;
+    }
+    .logo .green { color: #4caf50; } /* WATCH — açık yeşil */
+    .logo .purple { color: #9c27b0; } /* WITH US — mor */
+
+    /* ── ANA ALAN ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    /* ── ARAMA PANELİ ── */
+    .search-panel {
+      background: #ffd6e0; /* açık pembe */
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 28px;
+    }
+    .search-panel h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: #4caf50; /* yeşil */
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    /* 2 sütun ızgara, mobilde 1 sütun */
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 500px) {
+      .filters { grid-template-columns: 1fr; }
+    }
+    .full-width { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid #e0a0b0;
+      color: #111;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .93rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus { border-color: #9c27b0; }
+
+    /* ── ARAMA BUTONU ── */
+    .btn-search {
+      width: 100%;
+      background: #ce93d8; /* açık mor */
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-search:hover    { opacity: .85; }
+    .btn-search:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── DURUM MESAJI ── */
+    #status {
+      text-align: center;
+      min-height: 34px;
+      padding: 8px 0;
+      font-size: .88rem;
+    }
+    .error-msg   { color: #c0392b; }
+    .info-msg    { color: #888; }
+    .loading-msg { color: #9c27b0; animation: pulse 1s infinite alternate; }
+    @keyframes pulse { from { opacity:1 } to { opacity:.3 } }
+
+    /* ── KART IZGARASI ── */
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 18px;
+    }
+
+    /* ── FILM KARTI ── */
+    .card {
+      background: #fff0f5;
+      border: 1px solid #f0b8c8;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s, border-color .2s;
+    }
+    .card:hover { transform: translateY(-4px); border-color: #9c27b0; }
+
+    .card-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      background: #f8d7e3;
+    }
+    .no-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      background: #f8d7e3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    .card-body  { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; color: #111; }
+    .card-year  { font-size: .78rem; color: #4caf50; font-weight: 600; }
+    .card-type  { font-size: .72rem; color: #555; text-transform: capitalize; }
+
+    /* ── SAYFALAMA ── */
+    #pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+    .btn-page {
+      background: #fff0f5;
+      border: 1px solid #f0b8c8;
+      color: #111;
+      padding: 7px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .88rem;
+      transition: border-color .2s;
+    }
+    .btn-page:hover    { border-color: #9c27b0; }
+    .btn-page:disabled { opacity: .3; cursor: not-allowed; }
+    .page-info { font-size: .82rem; color: #888; }
+
+    /* ── BOŞ DURUM ── */
+    .empty {
+      text-align: center;
+      padding: 50px 0;
+      color: #aaa;
+      grid-column: 1 / -1;
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: 10px; }
+
+    /* ── MODAL ARKA PLAN ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+
+    /* ── MODAL KUTUSU ── */
+    .modal {
+      background: #fff0f5;
+      border: 1px solid #f0b8c8;
+      border-radius: 10px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(18px);
+      transition: transform .25s;
+    }
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal-close {
+      display: block;
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 12px 16px 0;
+    }
+    .modal-close:hover { color: #111; }
+
+    .modal-body {
+      display: flex;
+      gap: 22px;
+      padding: 20px 22px 26px;
+    }
+    @media (max-width: 520px) { .modal-body { flex-direction: column; } }
+
+    .modal-poster {
+      width: 160px;
+      min-width: 160px;
+      border-radius: 6px;
+      object-fit: cover;
+      align-self: flex-start;
+    }
+    @media (max-width: 520px) { .modal-poster { width: 100%; min-width: unset; } }
+
+    .modal-info { flex: 1; }
+
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      color: #111;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .modal-sub { font-size: .83rem; color: #4caf50; margin-bottom: 14px; }
+
+    /* Detay satırı */
+    .row { display: flex; gap: 8px; margin-bottom: 7px; font-size: .86rem; flex-wrap: wrap; }
+    .dl  { color: #888; min-width: 76px; font-size: .74rem; text-transform: uppercase; letter-spacing: .5px; padding-top: 2px; }
+    .dv  { color: #111; }
+
+    .rating-badge {
+      display: inline-block;
+      background: #ce93d8;
+      color: #111;
+      font-weight: 700;
+      font-size: .78rem;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-left: 4px;
+    }
+    .plot {
+      margin-top: 14px;
+      border-top: 1px solid #f0b8c8;
+      padding-top: 14px;
+      font-size: .86rem;
+      line-height: 1.65;
+      color: #333;
+    }
+
+    /* YÜKLENİYOR */
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid #f0b8c8;
+      border-top-color: #9c27b0;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 24px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <span class="green">WATCH </span><span class="purple">WITH US</span>
+  </div>
+</header>
+
+<!-- ANA ALAN -->
+<main>
+
+  <!-- Arama paneli -->
+  <section class="search-panel">
+    <h2>🎬 FIND YOUR NEXT WATCH</h2>
+
+    <div class="filters">
+
+      <!-- Film adı — tam genişlik -->
+      <div class="full-width">
+        <label for="inp-title">Title</label>
+        <input id="inp-title" type="text" placeholder="e.g. Inception, Breaking Bad…" autocomplete="off" />
+      </div>
+
+      <!-- Yıl filtresi -->
+      <div>
+        <label for="inp-year">Year (optional)</label>
+        <input id="inp-year" type="number" placeholder="e.g. 2010" min="1888" max="2030" />
+      </div>
+
+      <!-- Tür filtresi: film / dizi / bölüm -->
+      <div>
+        <label for="sel-type">Type</label>
+        <select id="sel-type">
+          <option value="">All Types</option>
+          <option value="movie">Movie</option>
+          <option value="series">Series</option>
+          <option value="episode">Episode</option>
+        </select>
+      </div>
+
+    </div>
+
+    <button class="btn-search" id="btn-search">SEARCH</button>
+  </section>
+
+  <!-- Durum mesajı -->
+  <div id="status" role="status" aria-live="polite"></div>
+
+  <!-- Sonuçlar -->
+  <div id="results"></div>
+
+  <!-- Sayfalama -->
+  <div id="pagination"></div>
+
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+
+// ── Ayarlar 
+// omdbapi.com'dan ücretsiz kendi key'ini al, aşağıya yaz
+const API_KEY  = 'cafe7ef4';
+const BASE_URL = `https://www.omdbapi.com/?apikey=${API_KEY}`;
+
+// ── Uygulama durumu 
+let state = {
+  query: '',
+  year:  '',
+  type:  '',
+  page:  1,
+  total: 0,
+};
+
+// ── Önbellek: aynı arama için tekrar API'ye gitme 
+const cache = {};
+
+// ── DOM elemanları 
+const inpTitle   = document.getElementById('inp-title');
+const inpYear    = document.getElementById('inp-year');
+const selType    = document.getElementById('sel-type');
+const btnSearch  = document.getElementById('btn-search');
+const statusEl   = document.getElementById('status');
+const resultsEl  = document.getElementById('results');
+const paginEl    = document.getElementById('pagination');
+const overlay    = document.getElementById('overlay');
+const modalBody  = document.getElementById('modal-body');
+const modalClose = document.getElementById('modal-close');
+
+// ── Yardımcı fonksiyonlar 
+
+// Durum mesajı göster
+function showStatus(msg, type) {
+  statusEl.innerHTML = `<span class="${type}-msg">${msg}</span>`;
+}
+function clearStatus() { statusEl.innerHTML = ''; }
+
+// Metni HTML'e güvenli hale getir 
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '–';
+  return d.innerHTML;
+}
+
+// Poster ya da emoji yedek
+function posterHTML(src, title, cssClass) {
+  if (src && src !== 'N/A') {
+    return `<img src="${esc(src)}" alt="${esc(title)}" class="${cssClass}"
+              onerror="this.outerHTML='<div class=no-poster>🎬</div>'">`;
+  }
+  return `<div class="no-poster">🎬</div>`;
+}
+
+// Film listesi çek (arama)
+async function searchMovies(query, year, type, page) {
+  const key = `${query}|${year}|${type}|${page}`;
+  if (cache[key]) return cache[key]; // önbellekte varsa döndür
+
+  let url = `${BASE_URL}&s=${encodeURIComponent(query)}&page=${page}`;
+  if (year) url += `&y=${encodeURIComponent(year)}`;
+  if (type) url += `&type=${type}`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Network error: ${res.status}`);
+
+  const data = await res.json();
+  cache[key] = data;
+  return data;
+}
+
+// Tek filmin detayını çek (IMDb ID ile)
+async function getDetail(imdbID) {
+  if (cache[imdbID]) return cache[imdbID];
+
+  const res = await fetch(`${BASE_URL}&i=${imdbID}&plot=full`);
+  if (!res.ok) throw new Error(`Network error: ${res.status}`);
+
+  const data = await res.json();
+  if (data.Response === 'False') throw new Error(data.Error || 'Not found.');
+
+  cache[imdbID] = data;
+  return data;
+}
+
+// ANA ARAMA
+async function runSearch() {
+  const query = state.query.trim();
+
+  if (!query) {
+    showStatus('⚠️ Please enter a title to search.', 'error');
+    return;
+  }
+
+  // Yüklenme durumu
+  btnSearch.disabled  = true;
+  paginEl.innerHTML   = '';
+  resultsEl.innerHTML = `<div class="spinner"></div>`;
+  showStatus('Searching…', 'loading');
+
+  try {
+    const data = await searchMovies(query, state.year, state.type, state.page);
+
+    // API hata döndürdüyse
+    if (data.Response === 'False') {
+      showStatus(`⚠️ ${esc(data.Error || 'No results found.')}`, 'error');
+      resultsEl.innerHTML = `
+        <div class="empty">
+          <div class="icon">🎬</div>
+          <p>${esc(data.Error || 'No results found.')}</p>
+        </div>`;
+      return;
+    }
+
+    state.total = parseInt(data.totalResults, 10) || 0;
+    clearStatus();
+    renderResults(data.Search);
+    renderPagination();
+
+  } catch (err) {
+    // Ağ veya beklenmedik hata
+    console.error(err);
+    showStatus('⚠️ Connection error. Please check your internet.', 'error');
+    resultsEl.innerHTML = `
+      <div class="empty">
+        <div class="icon">⚠️</div>
+        <p>Could not reach the server. Try again.</p>
+      </div>`;
+  } finally {
+    btnSearch.disabled = false; // Her durumda butonu geri aç
+  }
+}
+
+// KARTLARI EKRANA YAZ
+
+function renderResults(movies) {
+  if (!movies || movies.length === 0) {
+    resultsEl.innerHTML = `
+      <div class="empty">
+        <div class="icon">🔍</div>
+        <p>No results found. Try a different search.</p>
+      </div>`;
+    return;
+  }
+
+  resultsEl.innerHTML = movies.map(m => `
+    <article class="card" tabindex="0" data-id="${esc(m.imdbID)}"
+             role="button" aria-label="${esc(m.Title)}">
+      ${posterHTML(m.Poster, m.Title, 'card-poster')}
+      <div class="card-body">
+        <div class="card-title">${esc(m.Title)}</div>
+        <div class="card-year">${esc(m.Year)}</div>
+        <div class="card-type">${esc(m.Type)}</div>
+      </div>
+    </article>
+  `).join('');
+
+  // Tıklama ve klavye desteği
+  resultsEl.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => openModal(card.dataset.id));
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') openModal(card.dataset.id);
+    });
+  });
+}
+
+// SAYFALAMA
+
+function renderPagination() {
+  const total = Math.ceil(state.total / 10);
+  if (total <= 1) { paginEl.innerHTML = ''; return; }
+
+  paginEl.innerHTML = `
+    <button class="btn-page" id="btn-prev" ${state.page <= 1 ? 'disabled' : ''}>← Prev</button>
+    <span class="page-info">Page ${state.page} / ${total}</span>
+    <button class="btn-page" id="btn-next" ${state.page >= total ? 'disabled' : ''}>Next →</button>
+  `;
+
+  document.getElementById('btn-prev').addEventListener('click', () => goPage(state.page - 1));
+  document.getElementById('btn-next').addEventListener('click', () => goPage(state.page + 1));
+}
+
+async function goPage(n) {
+  state.page = n;
+  saveState();
+  await runSearch();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// MODAL — DETAY PENCERESİ
+
+async function openModal(imdbID) {
+  modalBody.innerHTML = `<div class="spinner" style="margin:40px auto"></div>`;
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  try {
+    const m = await getDetail(imdbID);
+
+    const ratings = (m.Ratings || [])
+      .map(r => `<span>${esc(r.Source)}: <strong>${esc(r.Value)}</strong></span>`)
+      .join(' · ');
+
+    modalBody.innerHTML = `
+      ${posterHTML(m.Poster, m.Title, 'modal-poster')}
+      <div class="modal-info">
+        <div class="modal-title">${esc(m.Title)}</div>
+        <div class="modal-sub">${esc(m.Year)} · ${esc(m.Genre)}</div>
+
+        <div class="row">
+          <span class="dl">Director</span>
+          <span class="dv">${esc(m.Director)}</span>
+        </div>
+        <div class="row">
+          <span class="dl">Cast</span>
+          <span class="dv">${esc(m.Actors)}</span>
+        </div>
+        <div class="row">
+          <span class="dl">Runtime</span>
+          <span class="dv">${esc(m.Runtime)}</span>
+        </div>
+        <div class="row">
+          <span class="dl">Language</span>
+          <span class="dv">${esc(m.Language)}</span>
+        </div>
+        <div class="row">
+          <span class="dl">IMDb</span>
+          <span class="dv">
+            <span class="rating-badge">★ ${esc(m.imdbRating)}</span>
+            <small style="color:#888"> (${esc(m.imdbVotes)} votes)</small>
+          </span>
+        </div>
+        ${ratings ? `<div class="row"><span class="dl">Ratings</span><span class="dv" style="font-size:.78rem">${ratings}</span></div>` : ''}
+        ${m.Awards && m.Awards !== 'N/A' ? `<div class="row"><span class="dl">Awards</span><span class="dv" style="font-size:.78rem">${esc(m.Awards)}</span></div>` : ''}
+
+        <div class="plot">${esc(m.Plot)}</div>
+      </div>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    modalBody.innerHTML = `
+      <div style="padding:30px;color:#c0392b">
+        ⚠️ Could not load details: ${esc(err.message)}
+      </div>`;
+  }
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// DURUM KAYDETME / GERİ YÜKLEME
+// Sayfa yenilenince son aramayı hatırlamak için
+// hem localStorage hem URL kullanıyoruz
+
+function saveState() {
+  try {
+    localStorage.setItem('wwu_state', JSON.stringify(state));
+  } catch (_) { /* özel sekme modu — görmezden gel */ }
+
+  const p = new URLSearchParams();
+  if (state.query)    p.set('q', state.query);
+  if (state.year)     p.set('y', state.year);
+  if (state.type)     p.set('t', state.type);
+  if (state.page > 1) p.set('p', state.page);
+  history.replaceState(null, '', p.toString() ? `?${p}` : location.pathname);
+}
+
+function restoreState() {
+  // Önce URL'e bak
+  const p = new URLSearchParams(location.search);
+  if (p.get('q')) {
+    state.query = p.get('q');
+    state.year  = p.get('y') || '';
+    state.type  = p.get('t') || '';
+    state.page  = parseInt(p.get('p'), 10) || 1;
+    return true;
+  }
+
+  // URL boşsa localStorage'a bak
+  try {
+    const saved = JSON.parse(localStorage.getItem('wwu_state'));
+    if (saved && saved.query) {
+      Object.assign(state, saved);
+      return true;
+    }
+  } catch (_) { /* bozuk JSON — görmezden gel */ }
+
+  return false;
+}
+
+// Input alanlarını state ile eşle
+function syncInputs() {
+  inpTitle.value = state.query;
+  inpYear.value  = state.year;
+  selType.value  = state.type;
+}
+
+// EVENT LISTENER'LAR
+
+// Arama butonuna tıklama
+btnSearch.addEventListener('click', () => {
+  state.query = inpTitle.value.trim();
+  state.year  = inpYear.value.trim();
+  state.type  = selType.value;
+  state.page  = 1;
+  saveState();
+  runSearch();
+});
+
+// Enter tuşu ile arama
+inpTitle.addEventListener('keydown', e => {
+  if (e.key === 'Enter') btnSearch.click();
+});
+
+// Modal kapatma
+modalClose.addEventListener('click', closeModal);
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// BAŞLATMA
+
+(function init() {
+  const hasState = restoreState();
+  if (hasState) {
+    syncInputs();
+    runSearch();
+  } else {
+    showStatus('Enter a title above to start searching.', 'info');
+  }
+})();
+
+</script>
+</body>
+</html>
