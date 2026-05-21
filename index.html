@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watch With Us</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      color: #111111;
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #ffd6e0;
+      padding: 18px 24px;
+      border-bottom: 1px solid #f0b8c8;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 3px;
+    }
+    .logo .green  { color: #4caf50; }
+    .logo .purple { color: #9c27b0; }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    .search-panel {
+      background: #ffd6e0;
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 28px;
+    }
+    .search-panel h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      color: #4caf50;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 500px) {
+      .filters { grid-template-columns: 1fr; }
+    }
+    .full-width { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      color: #333;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 5px;
+    }
+    input, select {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid #e0a0b0;
+      color: #111;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .93rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus { border-color: #9c27b0; }
+
+    .btn-search {
+      width: 100%;
+      background: #ce93d8;
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-search:hover    { opacity: .85; }
+    .btn-search:disabled { opacity: .4; cursor: not-allowed; }
+
+    #status {
+      text-align: center;
+      min-height: 34px;
+      padding: 8px 0;
+      font-size: .88rem;
+    }
+    .error-msg   { color: #c0392b; }
+    .info-msg    { color: #888; }
+    .loading-msg { color: #9c27b0; animation: pulse 1s infinite alternate; }
+    @keyframes pulse { from { opacity:1 } to { opacity:.3 } }
+
+    #results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #fff0f5;
+      border: 1px solid #f0b8c8;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s, border-color .2s;
+    }
+    .card:hover { transform: translateY(-4px); border-color: #9c27b0; }
+
+    .card-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      background: #f8d7e3;
+    }
+    .no-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      background: #f8d7e3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+    }
+    .card-body  { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; color: #111; }
+    .card-year  { font-size: .78rem; color: #4caf50; font-weight: 600; }
+    .card-type  { font-size: .72rem; color: #555; text-transform: capitalize; }
+
+    #pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+    .btn-page {
+      background: #fff0f5;
+      border: 1px solid #f0b8c8;
+      color: #111;
+      padding: 7px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .88rem;
+      transition: border-color .2s;
+    }
+    .btn-page:hover    { border-color: #9c27b0; }
+    .btn-page:disabled { opacity: .3; cursor: not-allowed; }
+    .page-info { font-size: .82rem; color: #888; }
+
+    .empty {
+      text-align: center;
+      padding: 50px 0;
+      color: #aaa;
+      grid-column: 1 / -1;
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: 10px; }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: #fff0f5;
+      border: 1px solid #f0b8c8;
+      border-radius: 10px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(18px);
+      transition: transform .25s;
+    }
+    .overlay.open .modal { transform: translateY(0); }
+
+    .modal-close {
+      display: block;
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 12px 16px 0;
+    }
+    .modal-close:hover { color: #111; }
+
+    .modal-body {
+      display: flex;
+      gap: 22px;
+      padding: 20px 22px 26px;
+    }
+    @media (max-width: 520px) { .modal-body { flex-direction: column; } }
+
+    .modal-poster {
+      width: 160px;
+      min-width: 160px;
+      border-radius: 6px;
+      object-fit: cover;
+      align-self: flex-start;
+    }
+    @media (max-width: 520px) { .modal-poster { width: 100%; min-width: unset; } }
+
+    .modal-info { flex: 1; }
+
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      color: #111;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .modal-sub { font-size: .83rem; color: #4caf50; margin-bottom: 14px; }
+
+    .row { display: flex; gap: 8px; margin-bottom: 7px; font-size: .86rem; flex-wrap: wrap; }
+    .dl  { color: #888; min-width: 76px; font-size: .74rem; text-transform: uppercase; letter-spacing: .5px; padding-top: 2px; }
+    .dv  { color: #111; }
+
+    .rating-badge {
+      display: inline-block;
+      background: #ce93d8;
+      color: #111;
+      font-weight: 700;
+      font-size: .78rem;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-left: 4px;
+    }
+    .plot {
+      margin-top: 14px;
+      border-top: 1px solid #f0b8c8;
+      padding-top: 14px;
+      font-size: .86rem;
+      line-height: 1.65;
+      color: #333;
+    }
+
+    .spinner {
+      width: 34px; height: 34px;
+      border: 3px solid #f0b8c8;
+      border-top-color: #9c27b0;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 24px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="green">WATCH </span><span class="purple">WITH US</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="search-panel">
+    <h2>🎬 FIND YOUR NEXT WATCH</h2>
+
+    <div class="filters">
+
+      <div class="full-width">
+        <label for="inp-title">Title</label>
+        <input id="inp-title" type="text" placeholder="e.g. Inception, Breaking Bad…" autocomplete="off" />
+      </div>
+
+      <div>
+        <label for="inp-year">Year (optional)</label>
+        <input id="inp-year" type="number" placeholder="e.g. 2010" min="1888" max="2030" />
+      </div>
+
+      <div>
+        <label for="sel-type">Type</label>
+        <select id="sel-type">
+          <option value="">All Types</option>
+          <option value="movie">Movie</option>
+          <option value="series">Series</option>
+          <option value="episode">Episode</option>
+        </select>
+      </div>
+
+    </div>
+
+    <button class="btn-search" id="btn-search">SEARCH</button>
+  </section>
+
+  <div id="status"></div>
+  <div id="results"></div>
+  <div id="pagination"></div>
+
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+
+  var API_KEY  = 'cafe7ef4';
+  var BASE_URL = 'https://www.omdbapi.com/?apikey=' + API_KEY;
+
+  var lastSearch = {
+    query: '',
+    year: '',
+    type: '',
+    page: 0,
+    data: null
+  };
+
+  var currentPage  = 1;
+  var totalResults = 0;
+
+  var inpTitle  = document.getElementById('inp-title');
+  var inpYear   = document.getElementById('inp-year');
+  var selType   = document.getElementById('sel-type');
+  var btnSearch = document.getElementById('btn-search');
+  var statusEl  = document.getElementById('status');
+  var resultsEl = document.getElementById('results');
+  var paginEl   = document.getElementById('pagination');
+  var overlay   = document.getElementById('overlay');
+  var modalBody = document.getElementById('modal-body');
+  var modalClose= document.getElementById('modal-close');
+
+  function showStatus(msg, type) {
+    statusEl.innerHTML = '<span class="' + type + '-msg">' + msg + '</span>';
+  }
+
+  function getPosterHTML(src, title, cssClass) {
+    if (src && src !== 'N/A') {
+      return '<img src="' + src + '" alt="' + title + '" class="' + cssClass + '" onerror="this.outerHTML=\'<div class=no-poster>🎬</div>\'">';
+    }
+    return '<div class="no-poster">🎬</div>';
+  }
+
+  function searchMovies(query, year, type, page) {
+    if (
+      lastSearch.query === query &&
+      lastSearch.year  === year  &&
+      lastSearch.type  === type  &&
+      lastSearch.page  === page  &&
+      lastSearch.data  !== null
+    ) {
+      return Promise.resolve(lastSearch.data);
+    }
+
+    var url = BASE_URL + '&s=' + encodeURIComponent(query) + '&page=' + page;
+    if (year) url += '&y=' + year;
+    if (type) url += '&type=' + type;
+
+    return fetch(url)
+      .then(function(res) {
+        if (!res.ok) throw new Error('Network error: ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        lastSearch.query = query;
+        lastSearch.year  = year;
+        lastSearch.type  = type;
+        lastSearch.page  = page;
+        lastSearch.data  = data;
+        return data;
+      });
+  }
+
+  function getMovieDetail(imdbID) {
+    return fetch(BASE_URL + '&i=' + imdbID + '&plot=full')
+      .then(function(res) {
+        if (!res.ok) throw new Error('Network error: ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        if (data.Response === 'False') throw new Error(data.Error || 'Not found.');
+        return data;
+      });
+  }
+
+  function showResults(movies) {
+    if (!movies || movies.length === 0) {
+      resultsEl.innerHTML = '<div class="empty"><div class="icon">🔍</div><p>No results found.</p></div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < movies.length; i++) {
+      var m = movies[i];
+      html += '<div class="card" data-id="' + m.imdbID + '">';
+      html += getPosterHTML(m.Poster, m.Title, 'card-poster');
+      html += '<div class="card-body">';
+      html += '<div class="card-title">' + m.Title + '</div>';
+      html += '<div class="card-year">'  + m.Year  + '</div>';
+      html += '<div class="card-type">'  + m.Type  + '</div>';
+      html += '</div></div>';
+    }
+    resultsEl.innerHTML = html;
+
+    var cards = resultsEl.getElementsByClassName('card');
+    for (var j = 0; j < cards.length; j++) {
+      cards[j].addEventListener('click', function() {
+        openModal(this.getAttribute('data-id'));
+      });
+    }
+  }
+
+  function showPagination() {
+    var totalPages = Math.ceil(totalResults / 10);
+    if (totalPages <= 1) {
+      paginEl.innerHTML = '';
+      return;
+    }
+
+    var prevDisabled = currentPage <= 1 ? 'disabled' : '';
+    var nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+
+    paginEl.innerHTML =
+      '<button class="btn-page" id="btn-prev" ' + prevDisabled + '>← Prev</button>' +
+      '<span class="page-info">Page ' + currentPage + ' / ' + totalPages + '</span>' +
+      '<button class="btn-page" id="btn-next" ' + nextDisabled + '>Next →</button>';
+
+    document.getElementById('btn-prev').addEventListener('click', function() {
+      goToPage(currentPage - 1);
+    });
+    document.getElementById('btn-next').addEventListener('click', function() {
+      goToPage(currentPage + 1);
+    });
+  }
+
+  function goToPage(page) {
+    currentPage = page;
+    saveToLocalStorage();
+    doSearch();
+    window.scrollTo(0, 0);
+  }
+
+  function doSearch() {
+    var query = inpTitle.value.trim();
+    var year  = inpYear.value.trim();
+    var type  = selType.value;
+
+    if (!query) {
+      showStatus('⚠️ Please enter a title to search.', 'error');
+      return;
+    }
+
+    btnSearch.disabled  = true;
+    paginEl.innerHTML   = '';
+    resultsEl.innerHTML = '<div class="spinner"></div>';
+    showStatus('Searching…', 'loading');
+
+    searchMovies(query, year, type, currentPage)
+      .then(function(data) {
+        if (data.Response === 'False') {
+          showStatus('⚠️ ' + (data.Error || 'No results found.'), 'error');
+          resultsEl.innerHTML = '<div class="empty"><div class="icon">🎬</div><p>' + (data.Error || 'No results found.') + '</p></div>';
+          return;
+        }
+
+        totalResults = parseInt(data.totalResults, 10) || 0;
+        statusEl.innerHTML = '';
+        showResults(data.Search);
+        showPagination();
+      })
+      .catch(function(err) {
+        showStatus('⚠️ Connection error. Please check your internet.', 'error');
+        resultsEl.innerHTML = '<div class="empty"><div class="icon">⚠️</div><p>Could not reach the server. Try again.</p></div>';
+      })
+      .finally(function() {
+        btnSearch.disabled = false;
+      });
+  }
+
+  function openModal(imdbID) {
+    modalBody.innerHTML = '<div class="spinner" style="margin:40px auto"></div>';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    getMovieDetail(imdbID)
+      .then(function(m) {
+        var ratingsHTML = '';
+        if (m.Ratings && m.Ratings.length > 0) {
+          for (var i = 0; i < m.Ratings.length; i++) {
+            ratingsHTML += '<span>' + m.Ratings[i].Source + ': <strong>' + m.Ratings[i].Value + '</strong></span> ';
+          }
+          ratingsHTML = '<div class="row"><span class="dl">Ratings</span><span class="dv" style="font-size:.78rem">' + ratingsHTML + '</span></div>';
+        }
+
+        var awardsHTML = '';
+        if (m.Awards && m.Awards !== 'N/A') {
+          awardsHTML = '<div class="row"><span class="dl">Awards</span><span class="dv" style="font-size:.78rem">' + m.Awards + '</span></div>';
+        }
+
+        modalBody.innerHTML =
+          getPosterHTML(m.Poster, m.Title, 'modal-poster') +
+          '<div class="modal-info">' +
+            '<div class="modal-title">' + m.Title + '</div>' +
+            '<div class="modal-sub">'  + m.Year + ' · ' + m.Genre + '</div>' +
+            '<div class="row"><span class="dl">Director</span><span class="dv">' + m.Director + '</span></div>' +
+            '<div class="row"><span class="dl">Cast</span><span class="dv">'     + m.Actors   + '</span></div>' +
+            '<div class="row"><span class="dl">Runtime</span><span class="dv">'  + m.Runtime  + '</span></div>' +
+            '<div class="row"><span class="dl">Language</span><span class="dv">' + m.Language + '</span></div>' +
+            '<div class="row"><span class="dl">IMDb</span><span class="dv"><span class="rating-badge">★ ' + m.imdbRating + '</span> <small style="color:#888">(' + m.imdbVotes + ' votes)</small></span></div>' +
+            ratingsHTML +
+            awardsHTML +
+            '<div class="plot">' + m.Plot + '</div>' +
+          '</div>';
+      })
+      .catch(function(err) {
+        modalBody.innerHTML = '<div style="padding:30px;color:#c0392b">⚠️ Could not load details: ' + err.message + '</div>';
+      });
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function saveToLocalStorage() {
+    var state = {
+      query: inpTitle.value.trim(),
+      year:  inpYear.value.trim(),
+      type:  selType.value,
+      page:  currentPage
+    };
+    localStorage.setItem('wwu_state', JSON.stringify(state));
+  }
+
+  function loadFromLocalStorage() {
+    try {
+      var saved = JSON.parse(localStorage.getItem('wwu_state'));
+      if (saved && saved.query) {
+        inpTitle.value = saved.query;
+        inpYear.value  = saved.year  || '';
+        selType.value  = saved.type  || '';
+        currentPage    = saved.page  || 1;
+        return true;
+      }
+    } catch (e) {
+      
+    }
+    return false;
+  }
+
+  btnSearch.addEventListener('click', function() {
+    currentPage = 1;
+    saveToLocalStorage();
+    doSearch();
+  });
+
+  inpTitle.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') btnSearch.click();
+  });
+
+  modalClose.addEventListener('click', closeModal);
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  if (loadFromLocalStorage()) {
+    doSearch();
+  } else {
+    showStatus('Enter a title above to start searching.', 'info');
+  }
+
+</script>
+</body>
+</html>
