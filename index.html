@@ -336,10 +336,11 @@
 
 <script>
 
-  var API_KEY  = 'cafe7ef4';
-  var BASE_URL = 'https://www.omdbapi.com/?apikey=' + API_KEY;
+  const API_KEY = 'cafe7ef4';
+  const BASE_URL = `https://www.omdbapi.com/?apikey=${API_KEY}`;
 
-  var lastSearch = {
+  // saving last search information
+  let lastSearch = {
     query: '',
     year: '',
     type: '',
@@ -347,205 +348,238 @@
     data: null
   };
 
-  var currentPage  = 1;
-  var totalResults = 0;
+  let currentPage = 1;
+  let totalResults = 0;
 
-  var inpTitle  = document.getElementById('inp-title');
-  var inpYear   = document.getElementById('inp-year');
-  var selType   = document.getElementById('sel-type');
-  var btnSearch = document.getElementById('btn-search');
-  var statusEl  = document.getElementById('status');
-  var resultsEl = document.getElementById('results');
-  var paginEl   = document.getElementById('pagination');
-  var overlay   = document.getElementById('overlay');
-  var modalBody = document.getElementById('modal-body');
-  var modalClose= document.getElementById('modal-close');
+  const inpTitle  = document.getElementById('inp-title');
+  const inpYear   = document.getElementById('inp-year');
+  const selType   = document.getElementById('sel-type');
+  const btnSearch = document.getElementById('btn-search');
+  const statusEl  = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+  const paginEl   = document.getElementById('pagination');
+  const overlay   = document.getElementById('overlay');
+  const modalBody = document.getElementById('modal-body');
+  const modalClose = document.getElementById('modal-close');
 
   function showStatus(msg, type) {
-    statusEl.innerHTML = '<span class="' + type + '-msg">' + msg + '</span>';
+    statusEl.innerHTML = `<span class="${type}-msg">${msg}</span>`;
   }
 
-  function getPosterHTML(src, title, cssClass) {
+  // if there is no poster show emoji
+  function getPoster(src, title, cssClass) {
     if (src && src !== 'N/A') {
-      return '<img src="' + src + '" alt="' + title + '" class="' + cssClass + '" onerror="this.outerHTML=\'<div class=no-poster>🎬</div>\'">';
+      return `<img src="${src}" alt="${title}" class="${cssClass}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Image'">`;
     }
-    return '<div class="no-poster">🎬</div>';
+    return `<div class="no-poster">🎬</div>`;
   }
 
-  function searchMovies(query, year, type, page) {
+  // call request
+  async function fetchMovies(query, year, type, page) {
+    // if it is the same request like before
     if (
       lastSearch.query === query &&
-      lastSearch.year  === year  &&
-      lastSearch.type  === type  &&
-      lastSearch.page  === page  &&
-      lastSearch.data  !== null
+      lastSearch.year === year &&
+      lastSearch.type === type &&
+      lastSearch.page === page &&
+      lastSearch.data !== null
     ) {
-      return Promise.resolve(lastSearch.data);
+      return lastSearch.data;
     }
 
-    var url = BASE_URL + '&s=' + encodeURIComponent(query) + '&page=' + page;
-    if (year) url += '&y=' + year;
-    if (type) url += '&type=' + type;
+    let url = `${BASE_URL}&s=${encodeURIComponent(query)}&page=${page}`;
+    if (year) url += `&y=${year}`;
+    if (type) url += `&type=${type}`;
 
-    return fetch(url)
-      .then(function(res) {
-        if (!res.ok) throw new Error('Network error: ' + res.status);
-        return res.json();
-      })
-      .then(function(data) {
-        lastSearch.query = query;
-        lastSearch.year  = year;
-        lastSearch.type  = type;
-        lastSearch.page  = page;
-        lastSearch.data  = data;
-        return data;
-      });
+    // console.log("request:", url);
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    // saving result
+    lastSearch = { query, year, type, page, data };
+
+    return data;
   }
 
-  function getMovieDetail(imdbID) {
-    return fetch(BASE_URL + '&i=' + imdbID + '&plot=full')
-      .then(function(res) {
-        if (!res.ok) throw new Error('Network error: ' + res.status);
-        return res.json();
-      })
-      .then(function(data) {
-        if (data.Response === 'False') throw new Error(data.Error || 'Not found.');
-        return data;
-      });
+  // movie explanation
+  async function fetchDetail(imdbID) {
+    const res = await fetch(`${BASE_URL}&i=${imdbID}&plot=full`);
+    const data = await res.json();
+
+    if (data.Response === 'False') {
+      throw new Error(data.Error || 'Film bulunamadı.');
+    }
+
+    return data;
   }
 
-  function showResults(movies) {
+  // show cards
+  function renderCards(movies) {
     if (!movies || movies.length === 0) {
-      resultsEl.innerHTML = '<div class="empty"><div class="icon">🔍</div><p>No results found.</p></div>';
+      resultsEl.innerHTML = `
+        <div class="empty">
+          <div class="icon">🔍</div>
+          <p>No results found. Try a different search.</p>
+        </div>`;
       return;
     }
 
-    var html = '';
-    for (var i = 0; i < movies.length; i++) {
-      var m = movies[i];
-      html += '<div class="card" data-id="' + m.imdbID + '">';
-      html += getPosterHTML(m.Poster, m.Title, 'card-poster');
-      html += '<div class="card-body">';
-      html += '<div class="card-title">' + m.Title + '</div>';
-      html += '<div class="card-year">'  + m.Year  + '</div>';
-      html += '<div class="card-type">'  + m.Type  + '</div>';
-      html += '</div></div>';
-    }
-    resultsEl.innerHTML = html;
+    // console.log(movies);
 
-    var cards = resultsEl.getElementsByClassName('card');
-    for (var j = 0; j < cards.length; j++) {
-      cards[j].addEventListener('click', function() {
-        openModal(this.getAttribute('data-id'));
-      });
-    }
+    resultsEl.innerHTML = movies.map(m => `
+      <div class="card" data-id="${m.imdbID}">
+        ${getPoster(m.Poster, m.Title, 'card-poster')}
+        <div class="card-body">
+          <div class="card-title">${m.Title}</div>
+          <div class="card-year">${m.Year}</div>
+          <div class="card-type">${m.Type}</div>
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.card').forEach(card => {
+      card.addEventListener('click', () => openModal(card.dataset.id));
+    });
   }
 
-  function showPagination() {
-    var totalPages = Math.ceil(totalResults / 10);
+  // paging butons
+  function renderPagination() {
+    const totalPages = Math.ceil(totalResults / 10);
     if (totalPages <= 1) {
       paginEl.innerHTML = '';
       return;
     }
 
-    var prevDisabled = currentPage <= 1 ? 'disabled' : '';
-    var nextDisabled = currentPage >= totalPages ? 'disabled' : '';
+    paginEl.innerHTML = `
+      <button class="btn-page" id="btn-prev" ${currentPage <= 1 ? 'disabled' : ''}>← Prev</button>
+      <span class="page-info">Page ${currentPage} / ${totalPages}</span>
+      <button class="btn-page" id="btn-next" ${currentPage >= totalPages ? 'disabled' : ''}>Next →</button>
+    `;
 
-    paginEl.innerHTML =
-      '<button class="btn-page" id="btn-prev" ' + prevDisabled + '>← Prev</button>' +
-      '<span class="page-info">Page ' + currentPage + ' / ' + totalPages + '</span>' +
-      '<button class="btn-page" id="btn-next" ' + nextDisabled + '>Next →</button>';
-
-    document.getElementById('btn-prev').addEventListener('click', function() {
-      goToPage(currentPage - 1);
-    });
-    document.getElementById('btn-next').addEventListener('click', function() {
-      goToPage(currentPage + 1);
-    });
+    document.getElementById('btn-prev').addEventListener('click', () => goToPage(currentPage - 1));
+    document.getElementById('btn-next').addEventListener('click', () => goToPage(currentPage + 1));
   }
 
-  function goToPage(page) {
+  async function goToPage(page) {
     currentPage = page;
-    saveToLocalStorage();
-    doSearch();
+    saveState();
+    await doSearch();
     window.scrollTo(0, 0);
   }
 
-  function doSearch() {
-    var query = inpTitle.value.trim();
-    var year  = inpYear.value.trim();
-    var type  = selType.value;
+  // main search function
+  async function doSearch() {
+    const query = inpTitle.value.trim();
+    const year  = inpYear.value.trim();
+    const type  = selType.value;
 
     if (!query) {
       showStatus('⚠️ Please enter a title to search.', 'error');
       return;
     }
 
-    btnSearch.disabled  = true;
-    paginEl.innerHTML   = '';
+    btnSearch.disabled = true;
+    paginEl.innerHTML  = '';
     resultsEl.innerHTML = '<div class="spinner"></div>';
     showStatus('Searching…', 'loading');
 
-    searchMovies(query, year, type, currentPage)
-      .then(function(data) {
-        if (data.Response === 'False') {
-          showStatus('⚠️ ' + (data.Error || 'No results found.'), 'error');
-          resultsEl.innerHTML = '<div class="empty"><div class="icon">🎬</div><p>' + (data.Error || 'No results found.') + '</p></div>';
-          return;
-        }
+    try {
+      const data = await fetchMovies(query, year, type, currentPage);
 
-        totalResults = parseInt(data.totalResults, 10) || 0;
-        statusEl.innerHTML = '';
-        showResults(data.Search);
-        showPagination();
-      })
-      .catch(function(err) {
-        showStatus('⚠️ Connection error. Please check your internet.', 'error');
-        resultsEl.innerHTML = '<div class="empty"><div class="icon">⚠️</div><p>Could not reach the server. Try again.</p></div>';
-      })
-      .finally(function() {
-        btnSearch.disabled = false;
-      });
+      if (data.Response === 'False') {
+        showStatus(`⚠️ ${data.Error || 'No results found.'}`, 'error');
+        resultsEl.innerHTML = `
+          <div class="empty">
+            <div class="icon">🎬</div>
+            <p>${data.Error || 'No results found.'}</p>
+          </div>`;
+        return;
+      }
+
+      totalResults = parseInt(data.totalResults) || 0;
+      statusEl.innerHTML = '';
+      renderCards(data.Search);
+      renderPagination();
+
+    } catch (err) {
+      showStatus('⚠️ Something went wrong. Check your internet connection.', 'error');
+      resultsEl.innerHTML = `
+        <div class="empty">
+          <div class="icon">⚠️</div>
+          <p>Could not reach the server. Try again.</p>
+        </div>`;
+    } finally {
+      btnSearch.disabled = false;
+    }
   }
 
-  function openModal(imdbID) {
+  // open modal
+  async function openModal(imdbID) {
     modalBody.innerHTML = '<div class="spinner" style="margin:40px auto"></div>';
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    getMovieDetail(imdbID)
-      .then(function(m) {
-        var ratingsHTML = '';
-        if (m.Ratings && m.Ratings.length > 0) {
-          for (var i = 0; i < m.Ratings.length; i++) {
-            ratingsHTML += '<span>' + m.Ratings[i].Source + ': <strong>' + m.Ratings[i].Value + '</strong></span> ';
-          }
-          ratingsHTML = '<div class="row"><span class="dl">Ratings</span><span class="dv" style="font-size:.78rem">' + ratingsHTML + '</span></div>';
-        }
+    try {
+      const m = await fetchDetail(imdbID);
 
-        var awardsHTML = '';
-        if (m.Awards && m.Awards !== 'N/A') {
-          awardsHTML = '<div class="row"><span class="dl">Awards</span><span class="dv" style="font-size:.78rem">' + m.Awards + '</span></div>';
-        }
+      // ratings to strings
+      let ratingsHTML = '';
+      if (m.Ratings && m.Ratings.length > 0) {
+        ratingsHTML = m.Ratings.map(r => `<span>${r.Source}: <strong>${r.Value}</strong></span>`).join(' · ');
+        ratingsHTML = `
+          <div class="row">
+            <span class="dl">Ratings</span>
+            <span class="dv" style="font-size:.78rem">${ratingsHTML}</span>
+          </div>`;
+      }
 
-        modalBody.innerHTML =
-          getPosterHTML(m.Poster, m.Title, 'modal-poster') +
-          '<div class="modal-info">' +
-            '<div class="modal-title">' + m.Title + '</div>' +
-            '<div class="modal-sub">'  + m.Year + ' · ' + m.Genre + '</div>' +
-            '<div class="row"><span class="dl">Director</span><span class="dv">' + m.Director + '</span></div>' +
-            '<div class="row"><span class="dl">Cast</span><span class="dv">'     + m.Actors   + '</span></div>' +
-            '<div class="row"><span class="dl">Runtime</span><span class="dv">'  + m.Runtime  + '</span></div>' +
-            '<div class="row"><span class="dl">Language</span><span class="dv">' + m.Language + '</span></div>' +
-            '<div class="row"><span class="dl">IMDb</span><span class="dv"><span class="rating-badge">★ ' + m.imdbRating + '</span> <small style="color:#888">(' + m.imdbVotes + ' votes)</small></span></div>' +
-            ratingsHTML +
-            awardsHTML +
-            '<div class="plot">' + m.Plot + '</div>' +
-          '</div>';
-      })
-      .catch(function(err) {
-        modalBody.innerHTML = '<div style="padding:30px;color:#c0392b">⚠️ Could not load details: ' + err.message + '</div>';
-      });
+      let awardsHTML = '';
+      if (m.Awards && m.Awards !== 'N/A') {
+        awardsHTML = `
+          <div class="row">
+            <span class="dl">Awards</span>
+            <span class="dv" style="font-size:.78rem">${m.Awards}</span>
+          </div>`;
+      }
+
+      modalBody.innerHTML = `
+        ${getPoster(m.Poster, m.Title, 'modal-poster')}
+        <div class="modal-info">
+          <div class="modal-title">${m.Title}</div>
+          <div class="modal-sub">${m.Year} · ${m.Genre}</div>
+          <div class="row">
+            <span class="dl">Director</span>
+            <span class="dv">${m.Director}</span>
+          </div>
+          <div class="row">
+            <span class="dl">Cast</span>
+            <span class="dv">${m.Actors}</span>
+          </div>
+          <div class="row">
+            <span class="dl">Runtime</span>
+            <span class="dv">${m.Runtime}</span>
+          </div>
+          <div class="row">
+            <span class="dl">Language</span>
+            <span class="dv">${m.Language}</span>
+          </div>
+          <div class="row">
+            <span class="dl">IMDb</span>
+            <span class="dv">
+              <span class="rating-badge">★ ${m.imdbRating}</span>
+              <small style="color:#888">(${m.imdbVotes} votes)</small>
+            </span>
+          </div>
+          ${ratingsHTML}
+          ${awardsHTML}
+          <div class="plot">${m.Plot}</div>
+        </div>
+      `;
+
+    } catch (err) {
+      modalBody.innerHTML = `<div style="padding:30px;color:#c0392b">⚠️ Could not load details: ${err.message}</div>`;
+    }
   }
 
   function closeModal() {
@@ -553,8 +587,9 @@
     document.body.style.overflow = '';
   }
 
-  function saveToLocalStorage() {
-    var state = {
+  // save with localStorage
+  function saveState() {
+    const state = {
       query: inpTitle.value.trim(),
       year:  inpYear.value.trim(),
       type:  selType.value,
@@ -563,9 +598,10 @@
     localStorage.setItem('wwu_state', JSON.stringify(state));
   }
 
-  function loadFromLocalStorage() {
+  // load from localStorage
+  function loadState() {
     try {
-      var saved = JSON.parse(localStorage.getItem('wwu_state'));
+      const saved = JSON.parse(localStorage.getItem('wwu_state'));
       if (saved && saved.query) {
         inpTitle.value = saved.query;
         inpYear.value  = saved.year  || '';
@@ -574,28 +610,30 @@
         return true;
       }
     } catch (e) {
-      
+      console.log('localStorage okunamadı', e);
     }
     return false;
   }
 
-  btnSearch.addEventListener('click', function() {
+  // butons
+  btnSearch.addEventListener('click', () => {
     currentPage = 1;
-    saveToLocalStorage();
+    saveState();
     doSearch();
   });
 
-  inpTitle.addEventListener('keydown', function(e) {
+  inpTitle.addEventListener('keydown', e => {
     if (e.key === 'Enter') btnSearch.click();
   });
 
   modalClose.addEventListener('click', closeModal);
 
-  overlay.addEventListener('click', function(e) {
+  overlay.addEventListener('click', e => {
     if (e.target === overlay) closeModal();
   });
 
-  if (loadFromLocalStorage()) {
+  // load last search when page open
+  if (loadState()) {
     doSearch();
   } else {
     showStatus('Enter a title above to start searching.', 'info');
