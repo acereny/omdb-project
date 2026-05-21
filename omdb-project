@@ -18,7 +18,7 @@
     }
 
     header {
-      background: #ffd6e0; /* açık pembe */
+      background: #ffd6e0; 
       padding: 18px 24px;
       border-bottom: 1px solid #f0b8c8;
     }
@@ -37,7 +37,7 @@
     }
 
     .search-panel {
-      background: #ffd6e0; /* açık pembe */
+      background: #ffd6e0; 
       border-radius: 10px;
       padding: 22px;
       margin-bottom: 28px;
@@ -85,7 +85,7 @@
 
     .btn-search {
       width: 100%;
-      background: #ce93d8; /* açık mor */
+      background: #ce93d8; 
       color: #111;
       border: none;
       border-radius: 6px;
@@ -283,17 +283,14 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="logo">
     <span class="green">WATCH </span><span class="purple">WITH US</span>
   </div>
 </header>
 
-<!-- ANA ALAN -->
 <main>
 
-  <!-- Arama paneli -->
   <section class="search-panel">
     <h2>🎬 FIND YOUR NEXT WATCH</h2>
 
@@ -305,13 +302,11 @@
         <input id="inp-title" type="text" placeholder="e.g. Inception, Breaking Bad…" autocomplete="off" />
       </div>
 
-      <!-- Yıl filtresi -->
       <div>
         <label for="inp-year">Year (optional)</label>
         <input id="inp-year" type="number" placeholder="e.g. 2010" min="1888" max="2030" />
       </div>
 
-      <!-- Tür filtresi: film / dizi / bölüm -->
       <div>
         <label for="sel-type">Type</label>
         <select id="sel-type">
@@ -327,18 +322,14 @@
     <button class="btn-search" id="btn-search">SEARCH</button>
   </section>
 
-  <!-- Durum mesajı -->
   <div id="status" role="status" aria-live="polite"></div>
 
-  <!-- Sonuçlar -->
   <div id="results"></div>
 
-  <!-- Sayfalama -->
   <div id="pagination"></div>
 
 </main>
 
-<!-- MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
     <button class="modal-close" id="modal-close">✕</button>
