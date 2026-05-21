@@ -3,639 +3,427 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Watch With Us</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
-
+  <title>Movie Search App</title>
+  
   <style>
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Basic Reset */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
 
     body {
-      background: #ffffff;
-      color: #111111;
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
     }
 
     header {
-      background: #ffd6e0; 
-      padding: 18px 24px;
-      border-bottom: 1px solid #f0b8c8;
-    }
-    .logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2.2rem;
-      letter-spacing: 3px;
-    }
-    .logo .green { color: #4caf50; } 
-    .logo .purple { color: #9c27b0; } 
-
-    main {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 28px 18px 60px;
-    }
-
-    .search-panel {
-      background: #ffd6e0; 
-      border-radius: 10px;
-      padding: 22px;
-      margin-bottom: 28px;
-    }
-    .search-panel h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem;
-      color: #4caf50; /* yeşil */
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-
-    .filters {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-    @media (max-width: 500px) {
-      .filters { grid-template-columns: 1fr; }
-    }
-    .full-width { grid-column: 1 / -1; }
-
-    label {
-      display: block;
-      font-size: 0.75rem;
-      color: #333;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      margin-bottom: 5px;
-    }
-    input, select {
-      width: 100%;
-      background: #ffffff;
-      border: 1px solid #e0a0b0;
-      color: #111;
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: .93rem;
-      outline: none;
-      transition: border-color .2s;
-    }
-    input:focus, select:focus { border-color: #9c27b0; }
-
-    .btn-search {
-      width: 100%;
-      background: #ce93d8; 
-      color: #111;
-      border: none;
-      border-radius: 6px;
-      padding: 12px;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.15rem;
-      letter-spacing: 2px;
-      cursor: pointer;
-      transition: opacity .2s;
-    }
-    .btn-search:hover    { opacity: .85; }
-    .btn-search:disabled { opacity: .4; cursor: not-allowed; }
-
-    #status {
-      text-align: center;
-      min-height: 34px;
-      padding: 8px 0;
-      font-size: .88rem;
-    }
-    .error-msg   { color: #c0392b; }
-    .info-msg    { color: #888; }
-    .loading-msg { color: #9c27b0; animation: pulse 1s infinite alternate; }
-    @keyframes pulse { from { opacity:1 } to { opacity:.3 } }
-
-    #results {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: #fff0f5;
-      border: 1px solid #f0b8c8;
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      transition: transform .2s, border-color .2s;
-    }
-    .card:hover { transform: translateY(-4px); border-color: #9c27b0; }
-
-    .card-poster {
-      width: 100%;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      display: block;
-      background: #f8d7e3;
-    }
-    .no-poster {
-      width: 100%;
-      aspect-ratio: 2/3;
-      background: #f8d7e3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
-    }
-    .card-body  { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; color: #111; }
-    .card-year  { font-size: .78rem; color: #4caf50; font-weight: 600; }
-    .card-type  { font-size: .72rem; color: #555; text-transform: capitalize; }
-
-    #pagination {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 26px;
-      flex-wrap: wrap;
-    }
-    .btn-page {
-      background: #fff0f5;
-      border: 1px solid #f0b8c8;
-      color: #111;
-      padding: 7px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: .88rem;
-      transition: border-color .2s;
-    }
-    .btn-page:hover    { border-color: #9c27b0; }
-    .btn-page:disabled { opacity: .3; cursor: not-allowed; }
-    .page-info { font-size: .82rem; color: #888; }
-
-    .empty {
-      text-align: center;
-      padding: 50px 0;
-      color: #aaa;
-      grid-column: 1 / -1;
-    }
-    .empty .icon { font-size: 3rem; margin-bottom: 10px; }
-
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.6);
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background-color: #ffd6e0;
       padding: 20px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .25s;
+      text-align: center;
+      border-bottom: 2px solid #f0b8c8;
     }
-    .overlay.open { opacity: 1; pointer-events: all; }
 
-    .modal {
-      background: #fff0f5;
-      border: 1px solid #f0b8c8;
-      border-radius: 10px;
-      max-width: 700px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-      transform: translateY(18px);
-      transition: transform .25s;
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-top: 20px;
     }
-    .overlay.open .modal { transform: translateY(0); }
 
-    .modal-close {
-      display: block;
-      margin-left: auto;
-      background: none;
-      border: none;
-      color: #888;
-      font-size: 1.3rem;
-      cursor: pointer;
-      padding: 12px 16px 0;
-    }
-    .modal-close:hover { color: #111; }
-
-    .modal-body {
+    /* Search Box - Less advanced CSS, simpler flexbox */
+    .search-box {
+      background-color: #ffd6e0;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
       display: flex;
-      gap: 22px;
-      padding: 20px 22px 26px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    @media (max-width: 520px) { .modal-body { flex-direction: column; } }
+
+    .search-box div {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .search-box input, .search-box select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .search-box button {
+      width: 100%;
+      padding: 10px;
+      background-color: #ce93d8;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .search-box button:hover {
+      background-color: #ba68c8;
+    }
+
+    #message {
+      text-align: center;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+
+    /* Movies List using standard floats or simple flexbox instead of Grid */
+    .movies-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
+    .movie-card {
+      width: 30%;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .movie-card:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .movie-card img {
+      width: 100%;
+      height: 350px;
+      object-fit: cover;
+      background-color: #eee;
+    }
+
+    .movie-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    /* Responsive adjustments without advanced CSS properties */
+    @media (max-width: 768px) {
+      .movie-card { width: 45%; }
+    }
+    @media (max-width: 480px) {
+      .movie-card { width: 100%; }
+    }
+
+    /* Simple Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.7);
+      z-index: 100;
+    }
+
+    .modal-content {
+      background-color: #fff;
+      width: 80%;
+      max-width: 700px;
+      margin: 50px auto;
+      padding: 20px;
+      border-radius: 5px;
+      position: relative;
+      display: flex;
+      gap: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .modal-content { flex-direction: column; }
+    }
 
     .modal-poster {
-      width: 160px;
-      min-width: 160px;
-      border-radius: 6px;
-      object-fit: cover;
-      align-self: flex-start;
-    }
-    @media (max-width: 520px) { .modal-poster { width: 100%; min-width: unset; } }
-
-    .modal-info { flex: 1; }
-
-    .modal-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.9rem;
-      color: #111;
-      line-height: 1.1;
-      margin-bottom: 4px;
-    }
-    .modal-sub { font-size: .83rem; color: #4caf50; margin-bottom: 14px; }
-
-    .row { display: flex; gap: 8px; margin-bottom: 7px; font-size: .86rem; flex-wrap: wrap; }
-    .dl  { color: #888; min-width: 76px; font-size: .74rem; text-transform: uppercase; letter-spacing: .5px; padding-top: 2px; }
-    .dv  { color: #111; }
-
-    .rating-badge {
-      display: inline-block;
-      background: #ce93d8;
-      color: #111;
-      font-weight: 700;
-      font-size: .78rem;
-      border-radius: 4px;
-      padding: 2px 8px;
-      margin-left: 4px;
-    }
-    .plot {
-      margin-top: 14px;
-      border-top: 1px solid #f0b8c8;
-      padding-top: 14px;
-      font-size: .86rem;
-      line-height: 1.65;
-      color: #333;
+      width: 200px;
     }
 
-    .spinner {
-      width: 34px; height: 34px;
-      border: 3px solid #f0b8c8;
-      border-top-color: #9c27b0;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      margin: 24px auto;
+    .modal-poster img {
+      width: 100%;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .pagination {
+      text-align: center;
+      margin: 20px 0 50px;
+    }
+
+    .pagination button {
+      padding: 8px 16px;
+      margin: 0 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <span class="green">WATCH </span><span class="purple">WITH US</span>
-  </div>
-</header>
+  <header>
+    <h1>🎬 Watch With Us</h1>
+  </header>
 
-<main>
-
-  <section class="search-panel">
-    <h2>🎬 FIND YOUR NEXT WATCH</h2>
-
-    <div class="filters">
-
-      <!-- Film adı — tam genişlik -->
-      <div class="full-width">
-        <label for="inp-title">Title</label>
-        <input id="inp-title" type="text" placeholder="e.g. Inception, Breaking Bad…" autocomplete="off" />
-      </div>
-
+  <div class="container">
+    
+    <div class="search-box">
       <div>
-        <label for="inp-year">Year (optional)</label>
-        <input id="inp-year" type="number" placeholder="e.g. 2010" min="1888" max="2030" />
+        <label for="searchInput">Movie Title</label>
+        <input type="text" id="searchInput" placeholder="e.g. Inception">
       </div>
-
       <div>
-        <label for="sel-type">Type</label>
-        <select id="sel-type">
-          <option value="">All Types</option>
+        <label for="yearInput">Year (Optional)</label>
+        <input type="number" id="yearInput" placeholder="2010">
+      </div>
+      <div>
+        <label for="typeSelect">Type</label>
+        <select id="typeSelect">
+          <option value="">All</option>
           <option value="movie">Movie</option>
           <option value="series">Series</option>
-          <option value="episode">Episode</option>
         </select>
       </div>
-
+      <button id="searchBtn">Search</button>
     </div>
 
-    <button class="btn-search" id="btn-search">SEARCH</button>
-  </section>
+    <div id="message"></div>
+    
+    <div class="movies-list" id="moviesList"></div>
+    
+    <div class="pagination" id="pagination"></div>
 
-  <div id="status" role="status" aria-live="polite"></div>
-
-  <div id="results"></div>
-
-  <div id="pagination"></div>
-
-</main>
-
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <button class="modal-close" id="modal-close">✕</button>
-    <div class="modal-body" id="modal-body"></div>
   </div>
-</div>
 
-<script>
+  <!-- Modal for Movie Details -->
+  <div class="modal" id="movieModal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeBtn">&times;</span>
+      <div class="modal-poster" id="modalPoster"></div>
+      <div class="modal-info" id="modalInfo"></div>
+    </div>
+  </div>
 
-const API_KEY  = 'cafe7ef4';
-const BASE_URL = `https:
+  <script>
+    // OMDB API Configuration
+    const API_KEY = 'cafe7ef4';
+    const BASE_URL = 'https://www.omdbapi.com/?apikey=' + API_KEY;
 
-let state = {
-  query: '',
-  year:  '',
-  type:  '',
-  page:  1,
-  total: 0,
-};
+    // App State
+    let currentState = {
+      query: '',
+      year: '',
+      type: '',
+      page: 1
+    };
 
-const cache = {};
+    // Cache to avoid unnecessary requests (Performance requirement)
+    const apiCache = {};
 
-const inpTitle   = document.getElementById('inp-title');
-const inpYear    = document.getElementById('inp-year');
-const selType    = document.getElementById('sel-type');
-const btnSearch  = document.getElementById('btn-search');
-const statusEl   = document.getElementById('status');
-const resultsEl  = document.getElementById('results');
-const paginEl    = document.getElementById('pagination');
-const overlay    = document.getElementById('overlay');
-const modalBody  = document.getElementById('modal-body');
-const modalClose = document.getElementById('modal-close');
+    // DOM Elements
+    const searchInput = document.getElementById('searchInput');
+    const yearInput = document.getElementById('yearInput');
+    const typeSelect = document.getElementById('typeSelect');
+    const searchBtn = document.getElementById('searchBtn');
+    const moviesList = document.getElementById('moviesList');
+    const messageEl = document.getElementById('message');
+    const paginationEl = document.getElementById('pagination');
+    const movieModal = document.getElementById('movieModal');
+    const closeBtn = document.getElementById('closeBtn');
 
-function showStatus(msg, type) {
-  statusEl.innerHTML = `<span class="${type}-msg">${msg}</span>`;
-}
-function clearStatus() { statusEl.innerHTML = ''; }
+    // Initialize App
+    window.onload = function() {
+      // Load saved state from LocalStorage
+      const savedState = localStorage.getItem('movieApp_state');
+      if (savedState) {
+        currentState = JSON.parse(savedState);
+        searchInput.value = currentState.query;
+        yearInput.value = currentState.year;
+        typeSelect.value = currentState.type;
+        
+        if (currentState.query !== '') {
+          fetchMovies();
+        }
+      }
+    };
 
-function esc(str) {
-  const d = document.createElement('div');
-  d.textContent = str || '–';
-  return d.innerHTML;
-}
+    // Search Button Click Event
+    searchBtn.addEventListener('click', function() {
+      currentState.query = searchInput.value.trim();
+      currentState.year = yearInput.value.trim();
+      currentState.type = typeSelect.value;
+      currentState.page = 1;
 
-function posterHTML(src, title, cssClass) {
-  if (src && src !== 'N/A') {
-    return `<img src="${esc(src)}" alt="${esc(title)}" class="${cssClass}"
-              onerror="this.outerHTML='<div class=no-poster>🎬</div>'">`;
-  }
-  return `<div class="no-poster">🎬</div>`;
-}
+      if (currentState.query === '') {
+        messageEl.innerText = 'Please enter a movie title!';
+        messageEl.style.color = 'red';
+        return;
+      }
 
-async function searchMovies(query, year, type, page) {
-  const key = `${query}|${year}|${type}|${page}`;
-  if (cache[key]) return cache[key]; 
-
-  let url = `${BASE_URL}&s=${encodeURIComponent(query)}&page=${page}`;
-  if (year) url += `&y=${encodeURIComponent(year)}`;
-  if (type) url += `&type=${type}`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Network error: ${res.status}`);
-
-  const data = await res.json();
-  cache[key] = data;
-  return data;
-}
-
-async function getDetail(imdbID) {
-  if (cache[imdbID]) return cache[imdbID];
-
-  const res = await fetch(`${BASE_URL}&i=${imdbID}&plot=full`);
-  if (!res.ok) throw new Error(`Network error: ${res.status}`);
-
-  const data = await res.json();
-  if (data.Response === 'False') throw new Error(data.Error || 'Not found.');
-
-  cache[imdbID] = data;
-  return data;
-}
-
-async function runSearch() {
-  const query = state.query.trim();
-
-  if (!query) {
-    showStatus('⚠️ Please enter a title to search.', 'error');
-    return;
-  }
-
-  btnSearch.disabled  = true;
-  paginEl.innerHTML   = '';
-  resultsEl.innerHTML = `<div class="spinner"></div>`;
-  showStatus('Searching…', 'loading');
-
-  try {
-    const data = await searchMovies(query, state.year, state.type, state.page);
-
-    if (data.Response === 'False') {
-      showStatus(`⚠️ ${esc(data.Error || 'No results found.')}`, 'error');
-      resultsEl.innerHTML = `
-        <div class="empty">
-          <div class="icon">🎬</div>
-          <p>${esc(data.Error || 'No results found.')}</p>
-        </div>`;
-      return;
-    }
-
-    state.total = parseInt(data.totalResults, 10) || 0;
-    clearStatus();
-    renderResults(data.Search);
-    renderPagination();
-
-  } catch (err) {
-    console.error(err);
-    showStatus('⚠️ Connection error. Please check your internet.', 'error');
-    resultsEl.innerHTML = `
-      <div class="empty">
-        <div class="icon">⚠️</div>
-        <p>Could not reach the server. Try again.</p>
-      </div>`;
-  } finally {
-    btnSearch.disabled = false;
-  }
-}
-
-function renderResults(movies) {
-  if (!movies || movies.length === 0) {
-    resultsEl.innerHTML = `
-      <div class="empty">
-        <div class="icon">🔍</div>
-        <p>No results found. Try a different search.</p>
-      </div>`;
-    return;
-  }
-
-  resultsEl.innerHTML = movies.map(m => `
-    <article class="card" tabindex="0" data-id="${esc(m.imdbID)}"
-             role="button" aria-label="${esc(m.Title)}">
-      ${posterHTML(m.Poster, m.Title, 'card-poster')}
-      <div class="card-body">
-        <div class="card-title">${esc(m.Title)}</div>
-        <div class="card-year">${esc(m.Year)}</div>
-        <div class="card-type">${esc(m.Type)}</div>
-      </div>
-    </article>
-  `).join('');
-
-  resultsEl.querySelectorAll('.card').forEach(card => {
-    card.addEventListener('click', () => openModal(card.dataset.id));
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') openModal(card.dataset.id);
+      saveState();
+      fetchMovies();
     });
-  });
-}
 
-function renderPagination() {
-  const total = Math.ceil(state.total / 10);
-  if (total <= 1) { paginEl.innerHTML = ''; return; }
-
-  paginEl.innerHTML = `
-    <button class="btn-page" id="btn-prev" ${state.page <= 1 ? 'disabled' : ''}>← Prev</button>
-    <span class="page-info">Page ${state.page} / ${total}</span>
-    <button class="btn-page" id="btn-next" ${state.page >= total ? 'disabled' : ''}>Next →</button>
-  `;
-
-  document.getElementById('btn-prev').addEventListener('click', () => goPage(state.page - 1));
-  document.getElementById('btn-next').addEventListener('click', () => goPage(state.page + 1));
-}
-
-async function goPage(n) {
-  state.page = n;
-  saveState();
-  await runSearch();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-async function openModal(imdbID) {
-  modalBody.innerHTML = `<div class="spinner" style="margin:40px auto"></div>`;
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
-
-  try {
-    const m = await getDetail(imdbID);
-
-    const ratings = (m.Ratings || [])
-      .map(r => `<span>${esc(r.Source)}: <strong>${esc(r.Value)}</strong></span>`)
-      .join(' · ');
-
-    modalBody.innerHTML = `
-      ${posterHTML(m.Poster, m.Title, 'modal-poster')}
-      <div class="modal-info">
-        <div class="modal-title">${esc(m.Title)}</div>
-        <div class="modal-sub">${esc(m.Year)} · ${esc(m.Genre)}</div>
-
-        <div class="row">
-          <span class="dl">Director</span>
-          <span class="dv">${esc(m.Director)}</span>
-        </div>
-        <div class="row">
-          <span class="dl">Cast</span>
-          <span class="dv">${esc(m.Actors)}</span>
-        </div>
-        <div class="row">
-          <span class="dl">Runtime</span>
-          <span class="dv">${esc(m.Runtime)}</span>
-        </div>
-        <div class="row">
-          <span class="dl">Language</span>
-          <span class="dv">${esc(m.Language)}</span>
-        </div>
-        <div class="row">
-          <span class="dl">IMDb</span>
-          <span class="dv">
-            <span class="rating-badge">★ ${esc(m.imdbRating)}</span>
-            <small style="color:#888"> (${esc(m.imdbVotes)} votes)</small>
-          </span>
-        </div>
-        ${ratings ? `<div class="row"><span class="dl">Ratings</span><span class="dv" style="font-size:.78rem">${ratings}</span></div>` : ''}
-        ${m.Awards && m.Awards !== 'N/A' ? `<div class="row"><span class="dl">Awards</span><span class="dv" style="font-size:.78rem">${esc(m.Awards)}</span></div>` : ''}
-
-        <div class="plot">${esc(m.Plot)}</div>
-      </div>
-    `;
-
-  } catch (err) {
-    console.error(err);
-    modalBody.innerHTML = `
-      <div style="padding:30px;color:#c0392b">
-        ⚠️ Could not load details: ${esc(err.message)}
-      </div>`;
-  }
-}
-
-function closeModal() {
-  overlay.classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function saveState() {
-  try {
-    localStorage.setItem('wwu_state', JSON.stringify(state));
-  } catch (_) { }
-
-  const p = new URLSearchParams();
-  if (state.query)    p.set('q', state.query);
-  if (state.year)     p.set('y', state.year);
-  if (state.type)     p.set('t', state.type);
-  if (state.page > 1) p.set('p', state.page);
-  history.replaceState(null, '', p.toString() ? `?${p}` : location.pathname);
-}
-
-function restoreState() {
-  const p = new URLSearchParams(location.search);
-  if (p.get('q')) {
-    state.query = p.get('q');
-    state.year  = p.get('y') || '';
-    state.type  = p.get('t') || '';
-    state.page  = parseInt(p.get('p'), 10) || 1;
-    return true;
-  }
-
-  try {
-    const saved = JSON.parse(localStorage.getItem('wwu_state'));
-    if (saved && saved.query) {
-      Object.assign(state, saved);
-      return true;
+    // Save state to LocalStorage
+    function saveState() {
+      localStorage.setItem('movieApp_state', JSON.stringify(currentState));
     }
-  } catch (_) { }
 
-  return false;
-}
+    // Fetch movies from API
+    async function fetchMovies() {
+      messageEl.innerText = 'Loading...';
+      messageEl.style.color = 'black';
+      moviesList.innerHTML = '';
+      paginationEl.innerHTML = '';
 
-function syncInputs() {
-  inpTitle.value = state.query;
-  inpYear.value  = state.year;
-  selType.value  = state.type;
-}
+      let url = BASE_URL + '&s=' + encodeURIComponent(currentState.query) + '&page=' + currentState.page;
+      if (currentState.year) url += '&y=' + currentState.year;
+      if (currentState.type) url += '&type=' + currentState.type;
 
-btnSearch.addEventListener('click', () => {
-  state.query = inpTitle.value.trim();
-  state.year  = inpYear.value.trim();
-  state.type  = selType.value;
-  state.page  = 1;
-  saveState();
-  runSearch();
-});
+      // Check cache first
+      if (apiCache[url]) {
+        displayMovies(apiCache[url]);
+        return;
+      }
 
-inpTitle.addEventListener('keydown', e => {
-  if (e.key === 'Enter') btnSearch.click();
-});
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        // Error handling
+        if (data.Response === 'False') {
+          messageEl.innerText = data.Error;
+          messageEl.style.color = 'red';
+        } else {
+          apiCache[url] = data; // Save to cache
+          displayMovies(data);
+        }
+      } catch (error) {
+        messageEl.innerText = 'Network Error! Please try again.';
+        messageEl.style.color = 'red';
+      }
+    }
 
-modalClose.addEventListener('click', closeModal);
-overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    // Render movies to screen
+    function displayMovies(data) {
+      messageEl.innerText = '';
+      
+      let htmlContent = '';
+      for (let i = 0; i < data.Search.length; i++) {
+        let movie = data.Search[i];
+        // Handle broken poster images simply
+        let posterSrc = (movie.Poster !== 'N/A') ? movie.Poster : 'https://via.placeholder.com/210x315?text=No+Poster';
+        
+        htmlContent += `
+          <div class="movie-card" onclick="openMovieDetails('${movie.imdbID}')">
+            <img src="${posterSrc}" alt="${movie.Title}" onerror="this.src='https://via.placeholder.com/210x315?text=Error'">
+            <div class="movie-title">${movie.Title}</div>
+            <div>${movie.Year}</div>
+            <div style="font-size: 12px; color: gray; margin-top: 5px;">${movie.Type.toUpperCase()}</div>
+          </div>
+        `;
+      }
+      moviesList.innerHTML = htmlContent;
 
+      // Setup simple pagination
+      setupPagination(data.totalResults);
+    }
 
-(function init() {
-  const hasState = restoreState();
-  if (hasState) {
-    syncInputs();
-    runSearch();
-  } else {
-    showStatus('Enter a title above to start searching.', 'info');
-  }
-})();
+    // Pagination logic
+    function setupPagination(totalResults) {
+      const totalPages = Math.ceil(totalResults / 10);
+      
+      if (totalPages > 1) {
+        let prevDisabled = (currentState.page === 1) ? 'disabled' : '';
+        let nextDisabled = (currentState.page === totalPages) ? 'disabled' : '';
 
-</script>
+        paginationEl.innerHTML = `
+          <button onclick="changePage(-1)" ${prevDisabled}>Previous</button>
+          <span>Page ${currentState.page} of ${totalPages}</span>
+          <button onclick="changePage(1)" ${nextDisabled}>Next</button>
+        `;
+      }
+    }
+
+    function changePage(direction) {
+      currentState.page += direction;
+      saveState();
+      fetchMovies();
+      window.scrollTo(0, 0); // Scroll to top
+    }
+
+    // Fetch and display single movie details
+    async function openMovieDetails(imdbID) {
+      movieModal.style.display = 'block';
+      document.getElementById('modalPoster').innerHTML = 'Loading...';
+      document.getElementById('modalInfo').innerHTML = '';
+
+      let url = BASE_URL + '&i=' + imdbID + '&plot=full';
+
+      try {
+        let data;
+        if (apiCache[imdbID]) {
+          data = apiCache[imdbID];
+        } else {
+          const response = await fetch(url);
+          data = await response.json();
+          apiCache[imdbID] = data;
+        }
+
+        let posterSrc = (data.Poster !== 'N/A') ? data.Poster : 'https://via.placeholder.com/300x450?text=No+Poster';
+
+        document.getElementById('modalPoster').innerHTML = `<img src="${posterSrc}" alt="${data.Title}">`;
+        
+        // Display required details: Title, Year, Genre, Director, Poster
+        document.getElementById('modalInfo').innerHTML = `
+          <h2>${data.Title} (${data.Year})</h2>
+          <p><strong>Genre:</strong> ${data.Genre}</p>
+          <p><strong>Director:</strong> ${data.Director}</p>
+          <p><strong>Actors:</strong> ${data.Actors}</p>
+          <p><strong>IMDB Rating:</strong> ${data.imdbRating}</p>
+          <hr style="margin: 15px 0;">
+          <p>${data.Plot}</p>
+        `;
+
+      } catch (error) {
+        document.getElementById('modalInfo').innerHTML = '<p style="color:red;">Error loading details.</p>';
+      }
+    }
+
+    // Close Modal
+    closeBtn.addEventListener('click', function() {
+      movieModal.style.display = 'none';
+    });
+
+    window.onclick = function(event) {
+      if (event.target == movieModal) {
+        movieModal.style.display = 'none';
+      }
+    };
+  </script>
+
 </body>
 </html>
